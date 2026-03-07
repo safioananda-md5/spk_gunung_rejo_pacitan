@@ -35,11 +35,26 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $weight = 0;
+                                    foreach ($criterias as $value) {
+                                        $weight = bcadd($weight, $value->weight, 0);
+                                    }
+                                @endphp
+                                @if ($weight < 100)
+                                    <div class="alert alert-warning" role="alert">
+                                        Total Bobot Kurang Dari 100%!
+                                    </div>
+                                @elseif($weight > 100)
+                                    <div class="alert alert-danger" role="alert">
+                                        Total Bobot Melebihi 100%!
+                                    </div>
+                                @endif
                                 @foreach ($criterias as $criteria)
                                     <tr>
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td class="text-center">{{ $criteria->name }}</td>
-                                        <td class="text-center">{{ $criteria->category . ' factor' }}</td>
+                                        <td class="text-center">{{ $criteria->category }}</td>
                                         <td class="text-center">{{ $criteria->weight . '%' }}</td>
                                         <td class="text-center">
                                             <a href="{{ route(Auth::user()->role . '.edit.criteria', Crypt::encrypt($criteria->id)) }}"
@@ -65,7 +80,13 @@
 @section('scripts')
     <script>
         $(document).ready(function() {
-            $('#criteriaTable').DataTable();
+            $('#criteriaTable').DataTable({
+                "columnDefs": [{
+                    "targets": [4],
+                    "orderable": false,
+                    "searchable": false
+                }]
+            });
         });
     </script>
 @endsection

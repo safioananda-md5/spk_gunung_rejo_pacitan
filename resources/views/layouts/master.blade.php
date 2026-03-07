@@ -132,22 +132,6 @@
                                             <span class="menu-title">Kriteria</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.profile.ideal') ? 'bg-green text-light' : '' }}"
-                                            href="{{ route(Auth::user()->role . '.profile.ideal') }}">
-                                            <i
-                                                class="typcn typcn-input-checked menu-icon {{ Route::is(Auth::user()->role . '.profile.ideal') ? 'text-light' : '' }}"></i>
-                                            <span class="menu-title">Profil Ideal</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.weight.value') ? 'bg-green text-light' : '' }}"
-                                            href="{{ route(Auth::user()->role . '.weight.value') }}">
-                                            <i
-                                                class="typcn typcn-beaker menu-icon {{ Route::is(Auth::user()->role . '.weight.value') ? 'text-light' : '' }}"></i>
-                                            <span class="menu-title">Nilai Bobot</span>
-                                        </a>
-                                    </li>
                                 </ul>
                             </div>
                         </li>
@@ -197,7 +181,7 @@
         <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
-
+    <script src="{{ asset('assets/js/boostrap.js') }}"></script>
     <!-- base:js -->
     <script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
     {{-- Jquery v3.7.1 --}}
@@ -207,6 +191,7 @@
     <script src="{{ asset('assets/vendors/chart.js/Chart.min.js') }}"></script>
     <!-- End plugin js for this page-->
     <!-- inject:js -->
+
     <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
     <script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
     <script src="{{ asset('assets/js/template.js') }}"></script>

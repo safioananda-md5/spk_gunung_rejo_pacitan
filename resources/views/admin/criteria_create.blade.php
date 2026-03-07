@@ -48,8 +48,9 @@
                         <label for="criteriaCategory">Ketegori Kriteria<span style="color: red">*</span></label>
                         <select class="form-control" name="criteriaCategory" id="criteriaCategory">
                             <option value="">-- Pilih Kategori --</option>
-                            <option value="core" @if ($edit && $criteria->category == 'core') selected @endif>Core Factor</option>
-                            <option value="secondary" @if ($edit && $criteria->category == 'secondary') selected @endif>Secondary Factor
+                            <option value="cost" @if ($edit && $criteria->category == 'cost') selected @endif>Cost</option>
+                            <option value="benefit" @if ($edit && $criteria->category == 'benefit') selected @endif>
+                                Benefit
                             </option>
                         </select>
                     </div>

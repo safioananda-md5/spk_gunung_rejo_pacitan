@@ -7,32 +7,87 @@
 @section('content')
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Data Alternatif</h4>
-                <small class="text-muted"><em><span style="color: red">*</span>Menandakan bahwa kolom ini wajib diisi atau
-                        dipilih</em></small>
-            </div>
-            <div class="card-body">
-                <form action="{{ route(Auth::user()->role . '.post.data') }}" method="post" class="border-bottom mb-3"
-                    id="uploadFileForm" enctype="multipart/form-data">
-                    @csrf
-                    <div class="form-group">
-                        <label>Unggah File Excel Data Alternatif<span style="color: red">*</span></label>
-                        <input type="file" name="file" class="file-upload-default"
-                            accept=".xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                        <div class="input-group col-xs-12">
-                            <input type="text" class="form-control file-upload-info" placeholder="Unggah file .xlsx"
-                                disabled>
-                            <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-primary" type="button">Pilih
-                                    File</button>
-                                <button type="submit" class="btn btn-success btn-icon-text">
-                                    Unggah File
-                                </button>
-                            </span>
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="card-title">Data Alternatif</h4>
+                    <small class="text-muted"><em><span style="color: red">*</span>Menandakan bahwa kolom ini wajib diisi atau
+                            dipilih</em></small>
+                </div>
+                <div>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="typcn typcn-plus"></i> Tambah Alternatif
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+                        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content modal-dialog-scrollable">
+                                <div class="modal-header">
+                                    <div>
+                                        <h5 class="modal-title" id="staticBackdropLabel">Formulir Tambah Kriteria</h5>
+                                        <small><em><span style="color: red">*</span> Menandakan kolom wajib diisi atau
+                                                dipilih.</em></small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal"
+                                        aria-label="Close"><i class="mdi mdi-close-box"></i></button>
+                                </div>
+                                <form action="{{ route('admin.post.data') }}" method="POST" id="uploadFileForm">
+                                    @csrf
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="name">Nama<span style="color: red">*</span></label>
+                                            <input type="text" class="form-control" id="name" name="name"
+                                                placeholder="Masukkan nama alternatif" required>
+                                        </div>
+                                        @foreach ($criterias as $criteria)
+                                            <div class="form-group">
+                                                <label for="criteria{{ $criteria->id }}">{{ $criteria->name }}<span
+                                                        style="color: red">*</span></label>
+                                                <select class="form-control" id="criteria{{ $criteria->id }}"
+                                                    name="criteria[{{ $criteria->id }}]" required>
+                                                    <option value="">-- Pilih Penilaian --</option>
+                                                    @foreach ($criteria->sub_criteria as $sub_criteria)
+                                                        @if (isset($sub_criteria->upper_value))
+                                                            <option value="{{ $sub_criteria->id }}">
+                                                                {{ '> ' . number_format($sub_criteria->upper_value, 0, ',', '.') }}
+                                                            </option>
+                                                        @elseif (isset($sub_criteria->under_value))
+                                                            <option value="{{ $sub_criteria->id }}">
+                                                                {{ '< ' . number_format($sub_criteria->under_value, 0, ',', '.') }}
+                                                            </option>
+                                                        @elseif (isset($sub_criteria->initial_value) && isset($sub_criteria->final_value))
+                                                            <option value="{{ $sub_criteria->id }}">
+                                                                {{ '> ' . number_format($sub_criteria->initial_value, 0, ',', '.') }}
+                                                                dan
+                                                                {!! '&le; ' . number_format($sub_criteria->final_value, 0, ',', '.') !!}
+                                                            </option>
+                                                        @elseif (isset($sub_criteria->sameas_value))
+                                                            <option value="{{ $sub_criteria->id }}">
+                                                                {{ is_numeric($sub_criteria->sameas_value)
+                                                                    ? number_format($sub_criteria->sameas_value, 0, ',', '.')
+                                                                    : $sub_criteria->sameas_value }}
+                                                            </option>
+                                                        @else
+                                                            <option value="">Data Kosong</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-info">Tambah</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </form>
+                </div>
+            </div>
+            <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between border-bottom pb-3">
                     <h5>Data Alternatif Keseluruhan</h5>
                     @if (count($alternatives) > 0)
@@ -48,7 +103,7 @@
                         <thead>
                             <tr>
                                 <th class="text-center">Nama</th>
-                                <th class="text-left">Kriteria & Skala</th>
+                                <th class="text-left">Kriteria & Nilai</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -60,7 +115,7 @@
                                         @foreach ($alternative->criteria_alternative as $criteria_alternative)
                                             <div class="my-2 row">
                                                 <div class="col-6">{{ $criteria_alternative->criteria->name }}</div>
-                                                <div class="col-6">Skala : {{ $criteria_alternative->value }}</div>
+                                                <div class="col-6">Nilai : {{ $criteria_alternative->value }}</div>
                                             </div>
                                         @endforeach
                                     </td>
@@ -92,6 +147,11 @@
 @endsection
 
 @section('css')
+    <style>
+        .modal-dialog-scrollable {
+            overflow-y: auto !important
+        }
+    </style>
 @endsection
 
 @section('scripts')
@@ -187,7 +247,16 @@
             $(this).prop('disabled', true);
             $(this).html('Proses...');
             $('.loader').removeClass('hidden');
-            $('#uploadFileForm').submit();
+
+            var form = $('#uploadFileForm')[0];
+            if (form.checkValidity()) {
+                form.submit();
+            } else {
+                $(this).prop('disabled', false);
+                $(this).html('Tambah');
+                $('.loader').addClass('hidden');
+                form.reportValidity();
+            }
         });
 
         $(document).ready(function() {

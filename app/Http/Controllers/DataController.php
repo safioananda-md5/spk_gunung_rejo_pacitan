@@ -28,10 +28,50 @@ class DataController extends Controller
         }
 
         $alternatives = Alternative::withCount('criteria_alternative')->with('criteria_alternative.criteria')->orderBy('id', 'asc')->get();
-        return view('admin.data_input', compact(['alternatives']));
+        return view('admin.data_input', compact(['alternatives', 'criterias']));
     }
 
     public function post(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required',
+                'criteria' => 'required|array',
+                'criteria.*' => 'required',
+            ], [
+                'name.required' => 'Nama Alternatif wajib diisi.',
+                'criteria.required' => 'Kriteria tidak valid.',
+                'criteria.*.required' => 'Data Kriteria wajib dipilih.',
+            ]);
+
+            DB::beginTransaction();
+            $alternative = Alternative::create([
+                'name' => $request->name,
+            ]);
+
+            foreach ($request->criteria as $criteria => $subCriteria) {
+                CriteriaAlternative::create([
+                    'alternative_id' => $alternative->id,
+                    'criteria_id' => $criteria,
+                    'value' => SubCriteria::where('id', $subCriteria)->value('scale'),
+                ]);
+            }
+            DB::commit();
+            flash()->success('Data alternatif berhasil ditambahkan.');
+            return redirect()->back();
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+            $allErrors = collect($errors)->flatten()->implode('<br> • ');
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> • ' . $allErrors);
+            return redirect()->back();
+        } catch (Throwable $e) {
+            DB::rollback();
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function postexcel(Request $request)
     {
         try {
             $request->validate([

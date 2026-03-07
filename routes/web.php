@@ -33,14 +33,6 @@ Route::group([
     Route::get('/edit-kriteria/{id}', [CriteriaController::class, 'edit'])->name('edit.criteria');
     Route::post('/update-kriteria/{id}', [CriteriaController::class, 'update'])->name('update.criteria');
     Route::post('/delete-kriteria/{id}', [CriteriaController::class, 'delete'])->name('delete.criteria');
-    // Profil Ideal
-    Route::get('/profil-ideal', [ProfileIdealController::class, 'index'])->name('profile.ideal');
-    Route::post('/profil-ideal', [ProfileIdealController::class, 'post'])->name('post.ideal');
-    // Nilai Bobot
-    Route::get('/nilai-bobot', [WeightValueController::class, 'index'])->name('weight.value');
-    Route::get('/getData-weight-value', [WeightValueController::class, 'getData'])->name('data.weight.value');
-    Route::post('/nilai-bobot', [WeightValueController::class, 'post'])->name('post.weight.value');
-    Route::delete('/nilai-bobot', [WeightValueController::class, 'delete'])->name('delete.weight.value');
     // Input Data
     Route::get('/input-data', [DataController::class, 'index'])->name('input.data');
     Route::post('/input-data', [DataController::class, 'post'])->name('post.data');
