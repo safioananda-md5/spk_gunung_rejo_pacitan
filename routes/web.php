@@ -7,9 +7,6 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\WeightValueController;
-use App\Http\Controllers\ProfileIdealController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -38,41 +35,7 @@ Route::group([
     Route::post('/input-data', [DataController::class, 'post'])->name('post.data');
     Route::delete('/delete-data', [DataController::class, 'delete'])->name('delete.data');
     Route::delete('/delete-all-data', [DataController::class, 'deleteAll'])->name('delete.all.data');
-    // Perangkingan
-    Route::get('/perangkingan', [RankingController::class, 'index'])->name('ranking');
-    Route::get('/perangkingan/hasil-rangking', [RankingController::class, 'rank'])->name('rank');
-    Route::post('/perangkingan/hasil-rangking', [RankingController::class, 'post'])->name('post.rank');
-    Route::get('/perangkingan/pemetaan-gap', [RankingController::class, 'gap'])->name('gap');
-    Route::get('/perangkingan/pembobotan', [RankingController::class, 'weight'])->name('weight');
-    Route::get('/perangkingan/core-secondary-factor', [RankingController::class, 'CSF'])->name('CSF');
-    Route::get('/perangkingan/nilai-total', [RankingController::class, 'total'])->name('total');
     // Penerimaan
     Route::get('/penerimaan', [AcceptanceController::class, 'index'])->name('acceptance');
-    Route::get('/penerimaan-detail/{date}', [AcceptanceController::class, 'detail'])->name('detail.acceptance');
-    Route::delete('/hapuspenerimaan', [AcceptanceController::class, 'delete'])->name('delete.acceptance');
-    Route::delete('/hapuspenerimaanall', [AcceptanceController::class, 'deleteall'])->name('deleteall.acceptance');
-});
-
-// User Routes
-Route::group([
-    'prefix' => '/user',
-    'as' => 'user.',
-    'middleware' => ['auth', 'role:user', 'decrypt:id']
-], function () {
-    Route::get('/dashboard', function () {
-        return redirect(route('user.penerimaan'));
-    })->name('dashboard');
-
-    Route::get('/penerimaan', [DashboardController::class, 'index'])->name('penerimaan');
-    // Penerimaan
-    Route::get('/penerimaan-detail/{date}', [AcceptanceController::class, 'detail'])->name('detail.acceptance');
-});
-
-Route::group([
-    'prefix' => '/export',
-    'as' => 'export.',
-    'middleware' => ['auth', 'decrypt:id']
-], function () {
-    Route::get('/excel/{date}', [ExportController::class, 'excel'])->name('excel');
-    Route::get('/pdf/{date}', [ExportController::class, 'pdf'])->name('pdf');
+    Route::post('/penerimaan', [AcceptanceController::class, 'post'])->name('post.acceptance');
 });

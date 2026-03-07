@@ -141,12 +141,6 @@
                                 <span class="menu-title">Input Data</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ request()->is('admin/perangkingan*') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route(Auth::user()->role . '.ranking') }}">
-                                <i class="typcn typcn-star menu-icon"></i>
-                                <span class="menu-title">Perangkingan</span>
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route(Auth::user()->role . '.acceptance') }}">
                                 <i class="typcn typcn-group menu-icon"></i>

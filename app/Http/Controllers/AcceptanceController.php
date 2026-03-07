@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Throwable;
 use Carbon\Carbon;
 use App\Models\Alternative;
+use App\Models\Criteria;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,99 +25,84 @@ class AcceptanceController extends Controller
         return view('admin.penerimaan', compact(['uniqueDates']));
     }
 
-    public function detail($date)
+    public function post(Request $request)
     {
-        $uniqueDates = Alternative::onlyTrashed()
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->deleted_at->translatedFormat('d F Y,H:i:s') . '|' . $item->description;
-            });
+        try {
+            $request->validate(
+                [
+                    'count' => 'required',
+                ],
+                [
+                    'count.required' => 'Jumlah Calon Penerima wajib diisi!',
+                ]
+            );
 
-        $penerimaan = [];
-        $formatted = '';
-        foreach ($uniqueDates as $dateIndex => $items) {
-            $part = explode('|', $dateIndex);
-            if (Str::slug($part[0]) == $date) {
-                $formatted = $dateIndex;
-                foreach ($items as $alternative) {
-                    $penerimaan[] = [
-                        'id' => $alternative->id,
-                        'name' => $alternative->name,
-                        'value' => $alternative->value,
-                    ];
+            // Matriks Keputusan
+            $alternatives = Alternative::all();
+            $criterias = Criteria::all();
+
+            $matriks_x = [];
+            foreach ($alternatives as $alternative) {
+                $alternativesCriterias = CriteriaAlternative::where('alternative_id', $alternative->id)->get();
+                foreach ($alternativesCriterias as $alternativesCriteria) {
+                    $matriks_x[$alternativesCriteria->criteria_id][$alternative->id] = $alternativesCriteria->value;
                 }
             }
-        }
-        usort($penerimaan, function ($a, $b) {
-            $valCompare = $b['value'] <=> $a['value'];
-            if ($valCompare === 0) {
-                return $a['name'] <=> $b['name'];
+
+            //Matriks Ternormalisasi (R)
+            $matriks_r = [];
+            foreach ($matriks_x as $id_kriteria => $penilaians) {
+                $jumlah_kuadrat = 0;
+                foreach ($penilaians as $penilaian) {
+                    $jumlah_kuadrat += pow($penilaian, 2);
+                }
+                $akar_kuadrat = sqrt($jumlah_kuadrat);
+                foreach ($penilaians as $id_alternatif => $penilaian) {
+                    $matriks_r[$id_kriteria][$id_alternatif] = $penilaian / $akar_kuadrat;
+                }
             }
 
-            return $valCompare;
-        });
-
-        foreach ($penerimaan as $index => &$item) {
-            $item['rank'] = $index + 1;
-        }
-        return view('admin.penerimaan_detail', compact(['uniqueDates', 'date', 'formatted', 'penerimaan']));
-    }
-
-    public function delete(Request $request)
-    {
-        try {
-            $request->validate(
-                [
-                    'id' => 'required',
-                ],
-                [
-                    'id.required' => 'Data penerimaan tidak ditemukan!',
-                ]
-            );
-
-            // dd($request->all());
-            DB::beginTransaction();
-            CriteriaAlternative::where('alternative_id', $request->id)->withTrashed()->forceDelete();
-            Alternative::where('id', $request->id)->withTrashed()->forceDelete();
-            DB::commit();
-            flash()->success('Data penerimaan berhasil dihapus.');
-            return redirect()->back();
-        } catch (ValidationException $e) {
-            $errors = $e->errors();
-            $allErrors = collect($errors)->flatten()->implode('<br> • ');
-            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> • ' . $allErrors);
-            return redirect()->back();
-        } catch (Throwable $e) {
-            DB::rollback();
-            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> ' . $e->getMessage());
-            return redirect()->back();
-        }
-    }
-
-    public function deleteall(Request $request)
-    {
-        try {
-            $request->validate(
-                [
-                    'id' => 'required',
-                ],
-                [
-                    'id.required' => 'Data penerimaan tidak ditemukan!',
-                ]
-            );
-
-            $tanggal = Carbon::createFromLocaleFormat('d F Y,H:i:s', 'id', $request->id);
-
-            // Sekarang kita ubah ke format yang diinginkan
-            $output = $tanggal->format('Y-m-d H:i:s');
-            DB::beginTransaction();
-            $ALternatives = Alternative::where('deleted_at', $output)->withTrashed()->get();
-            foreach ($ALternatives as $AL) {
-                CriteriaAlternative::where('alternative_id', $AL->id)->withTrashed()->forceDelete();
-                $AL->forceDelete();
+            //Matriks Normalisasi Terbobot
+            $matriks_rb = [];
+            foreach ($alternatives as $alternative) {
+                foreach ($criterias as $criteria) {
+                    $bobot = (float) $criteria->weight / 100;
+                    $id_alternatif = $alternative->id;
+                    $id_kriteria = $criteria->id;
+                    $nilai_r = $matriks_r[$id_kriteria][$id_alternatif];
+                    $matriks_rb[$id_kriteria][$id_alternatif] = $bobot * $nilai_r;
+                }
             }
-            DB::commit();
-            flash()->success('Data penerimaan berhasil dihapus.');
+
+            //Nilai Yi
+            $nilai_y_max = [];
+            $nilai_y_min = [];
+            foreach ($alternatives as $alternative) {
+                $total_max = 0;
+                $total_min = 0;
+                foreach ($criterias as $criteria) {
+                    $id_alternatif = $alternative->id;
+                    $id_kriteria = $criteria->id;
+                    $type_kriteria = $criteria->category;
+                    $nilai_rb = $matriks_rb[$id_kriteria][$id_alternatif];
+                    if ($type_kriteria == 'benefit') {
+                        $total_max += $nilai_rb;
+                    } elseif ($type_kriteria == 'cost') {
+                        $total_min += $nilai_rb;
+                    }
+                }
+                $nilai_y_max[$id_alternatif] = $total_max;
+                $nilai_y_min[$id_alternatif] = $total_min;
+            }
+
+            $nilai_yi = [];
+            foreach ($alternatives as $alternative) {
+                $nilai_yi[$alternative->id] = bcsub($nilai_y_max[$alternative->id], $nilai_y_min[$alternative->id], 6);
+            }
+            // DB::beginTransaction();
+
+            // DB::commit();
+            flash()->success('Data penerimaan berhasil dibuat.');
             return redirect()->back();
         } catch (ValidationException $e) {
             $errors = $e->errors();
