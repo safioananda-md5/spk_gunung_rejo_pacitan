@@ -6,12 +6,6 @@
 
 @section('content')
     <div class="row">
-        <div class="col-lg-12 grid-margin">
-            <div class="alert alert-info" role="alert">
-                Selamat datang pada Platform Digital Sistem Pendukung Keputusan Penetapan Penerima Bantuan Sosial Siswa SMK
-                Muhammadiyah 1 Taman.
-            </div>
-        </div>
         <div class="col-lg-6 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">

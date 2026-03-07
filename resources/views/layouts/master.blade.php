@@ -5,7 +5,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>@stack('page') | SPK - SMK Muhammadiyah 1 Taman</title>
+    <title>@stack('page') | SPK - {{ env('APP_NAME') }}</title>
     <!-- base:css -->
     <link rel="stylesheet" href="{{ asset('assets/vendors/typicons/typicons.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">
@@ -16,7 +16,7 @@
     <!-- inject:css -->
     <link rel="stylesheet" href="{{ asset('assets/css/vertical-layout-light/style.css') }}">
     <!-- endinject -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/icon.png') }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/images/logo-1.webp') }}" />
     {{-- Datatables --}}
     <link rel="stylesheet" href="{{ asset('assets/vendors/datatables/css/dataTables.bootstrap5.css') }}" />
     {{-- Sweetalert2 --}}
@@ -37,19 +37,6 @@
             height: 100%;
             z-index: 99999;
         }
-
-        .bg-cyan {
-            background-color: #00c8bf !important;
-        }
-
-        .sub-hover:hover {
-            color: #fff !important;
-            background-color: #00c8bf !important;
-        }
-
-        .sub-hover:hover i {
-            color: #fff !important;
-        }
     </style>
     @yield('css')
 </head>
@@ -59,16 +46,13 @@
         <!-- partial:partials/_navbar.html -->
         <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
             <div class="navbar-brand-wrapper d-flex justify-content-center">
-                <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand brand-logo" href="{{ route(Auth::user()->role . '.dashboard') }}">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <img src="{{ asset('assets/images/icon.png') }}" alt="logo" />
-                            <h4 class="d-flex align-items-center justify-content-center m-0 pl-2" style="color: #fff">
-                                SMKMITA</h4>
-                        </div>
+                <div class="navbar-brand-inner-wrapper d-flex align-items-center justify-content-between w-100">
+                    <a class="navbar-brand brand-logo w-100" href="{{ route(Auth::user()->role . '.dashboard') }}">
+                        <img src="{{ asset('assets/images/logo-2.webp') }}" style="height: 108px; width: 192px;"
+                            alt="logo" />
                     </a>
                     <a class="navbar-brand brand-logo-mini" href="{{ route(Auth::user()->role . '.dashboard') }}"><img
-                            src="{{ asset('assets/images/icon.png') }}" alt="logo" /></a>
+                            src="{{ asset('assets/images/logo-1.webp') }}" style="width: 45px" alt="logo" /></a>
                     <button class="navbar-toggler navbar-toggler align-self-center" type="button"
                         data-toggle="minimize">
                         <span class="typcn typcn-th-menu"></span>
@@ -141,7 +125,7 @@
                             <div class="collapse" id="ui-criteria">
                                 <ul class="nav flex-column sub-menu">
                                     <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.criteria') ? 'bg-cyan text-light' : '' }}"
+                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.criteria') ? 'bg-green text-light' : '' }}"
                                             href="{{ route(Auth::user()->role . '.criteria') }}">
                                             <i
                                                 class="typcn typcn-clipboard menu-icon {{ Route::is(Auth::user()->role . '.criteria') ? 'text-light' : '' }}"></i>
@@ -149,7 +133,7 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.profile.ideal') ? 'bg-cyan text-light' : '' }}"
+                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.profile.ideal') ? 'bg-green text-light' : '' }}"
                                             href="{{ route(Auth::user()->role . '.profile.ideal') }}">
                                             <i
                                                 class="typcn typcn-input-checked menu-icon {{ Route::is(Auth::user()->role . '.profile.ideal') ? 'text-light' : '' }}"></i>
@@ -157,7 +141,7 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.weight.value') ? 'bg-cyan text-light' : '' }}"
+                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.weight.value') ? 'bg-green text-light' : '' }}"
                                             href="{{ route(Auth::user()->role . '.weight.value') }}">
                                             <i
                                                 class="typcn typcn-beaker menu-icon {{ Route::is(Auth::user()->role . '.weight.value') ? 'text-light' : '' }}"></i>
@@ -201,8 +185,7 @@
                             <div class="d-sm-flex justify-content-center justify-content-sm-between">
                                 <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright ©
                                     {{ now()->format('Y') }} <a href="https://smkmita.sch.id/" class="text-muted"
-                                        target="_blank">SMKMITA</a>. All rights reserved. Aplikasi SPK Bantuan Siswa
-                                    Kurang Mampu</span>
+                                        target="_blank">{{ env('APP_NAME') }}</a>. All rights reserved.</span>
                             </div>
                         </div>
                     </div>

@@ -19,20 +19,20 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             [
-                'name' => "Admin SMK Muhammadiyah 1 Taman",
-                'email' => 'admin@smkmuh1taman.sch.id',
+                'name' => "Sekretaris Desa Gunung Rejo",
+                'email' => 'sekretaris@gunungrejo.go.id',
                 'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('Admin_123'),
+                'password' => Hash::make('sek123'),
                 'role' => 'admin',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => "User SMK Muhammadiyah 1 Taman",
-                'email' => 'user@smkmuh1taman.sch.id',
+                'name' => "Kepala Desa Gunung Rejo",
+                'email' => 'kades@gunungrejo.go.id',
                 'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('User_123'),
-                'role' => 'user',
+                'password' => Hash::make('kades123'),
+                'role' => 'kades',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
