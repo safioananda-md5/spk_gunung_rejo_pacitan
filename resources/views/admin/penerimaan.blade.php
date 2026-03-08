@@ -9,42 +9,47 @@
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h4 class="card-title">Data Penerimaan</h4>
-                <div>
-                    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                        <i class="typcn typcn-plus"></i> Buat Penerimaan
-                    </button>
-                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
-                        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content modal-dialog-scrollable">
-                                <div class="modal-header">
-                                    <div>
-                                        <h5 class="modal-title" id="staticBackdropLabel">Formulir Buat Penerimaan</h5>
-                                        <small><em><span style="color: red">*</span> Menandakan kolom wajib diisi atau
-                                                dipilih.</em></small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal"
-                                        aria-label="Close"><i class="mdi mdi-close-box"></i></button>
-                                </div>
-                                <form action="{{ route('admin.post.acceptance') }}" method="POST" id="uploadFileForm">
-                                    @csrf
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <label for="count">Jumlah Calon Penerima<span
-                                                    style="color: red">*</span></label>
-                                            <input type="number" class="form-control" id="count" name="count"
-                                                placeholder="Masukkan jumlah calon penerima" required>
+                @if (Auth::user()->role == 'admin')
+                    <div>
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop">
+                            <i class="typcn typcn-plus"></i> Buat Penerimaan
+                        </button>
+                        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+                            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content modal-dialog-scrollable">
+                                    <div class="modal-header">
+                                        <div>
+                                            <h5 class="modal-title" id="staticBackdropLabel">Formulir Buat Penerimaan</h5>
+                                            <small><em><span style="color: red">*</span> Menandakan kolom wajib diisi atau
+                                                    dipilih.</em></small>
                                         </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            data-bs-dismiss="modal" aria-label="Close"><i
+                                                class="mdi mdi-close-box"></i></button>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-info">Buat</button>
-                                    </div>
-                                </form>
+                                    <form action="{{ route('admin.post.acceptance') }}" method="POST" id="uploadFileForm">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label for="count">Jumlah Calon Penerima<span
+                                                        style="color: red">*</span></label>
+                                                <input type="number" class="form-control" id="count" name="count"
+                                                    placeholder="Masukkan jumlah calon penerima" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-danger"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-info">Buat</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -58,13 +63,113 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach ($penerimaans as $penerimaan)
+                                <tr>
+                                    <td class="text-center">{{ $penerimaan->tanggal }}</td>
+                                    <td class="text-center">{{ count($penerimaan->rank) }}</td>
+                                    <td class="text-center">
+                                        @if ($penerimaan->status == 'Draft')
+                                            <span class="badge bg-info text-light">Draft</span>
+                                        @else
+                                            <span class="badge bg-success text-light">Disetujui Kepala Desa</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if (Auth::user()->role == 'admin' && $penerimaan == 'Draft')
+                                            <button type="button" class="btn btn-outline-danger btn-fw"
+                                                onclick="hapusALL('{{ $penerimaan->id }}')">Hapus</button>
+                                        @endif
+                                        @if (Auth::user()->role == 'admin')
+                                            <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                                data-bs-target="#detail{{ $penerimaan->id }}">Detail
+                                            </button>
+                                        @else
+                                            @if ($penerimaan->status == 'Draft')
+                                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                                    data-bs-target="#detail{{ $penerimaan->id }}">Setujui
+                                                </button>
+                                            @else
+                                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                                    data-bs-target="#detail{{ $penerimaan->id }}">Detail
+                                                </button>
+                                            @endif
+                                        @endif
+                                        <div class="modal fade" id="detail{{ $penerimaan->id }}" data-bs-backdrop="static"
+                                            data-bs-keyboard="false" tabindex="-1"
+                                            aria-labelledby="staticBackdropLabel{{ $penerimaan->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content modal-dialog-scrollable">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title"
+                                                            id="staticBackdropLabel{{ $penerimaan->id }}">Data Detail
+                                                            Penerimaan</h5>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                            data-bs-dismiss="modal" aria-label="Close"><i
+                                                                class="mdi mdi-close-box"></i></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <table class="table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th class="text-center">Ranking</th>
+                                                                        <th class="text-center">Nilai</th>
+                                                                        <th class="text-center">Alternatif</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach ($penerimaan->rank as $rank)
+                                                                        <tr>
+                                                                            <td>{{ $rank->rank }}</td>
+                                                                            <td>{{ $rank->value }}</td>
+                                                                            <td>{{ $rank->alternative->name }}</td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="text-left">
+                                                            <small>Lihat detail perhitungan, <a
+                                                                    href="{{ route(Auth::user()->role . '.perhitungan', Crypt::encrypt($penerimaan->id)) }}"
+                                                                    target="_blank">Detail
+                                                                    Perhitungan.</a></small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        @if (Auth::user()->role == 'admin')
+                                                            <button type="button" class="btn btn-danger"
+                                                                data-bs-dismiss="modal">Tutup</button>
+                                                        @else
+                                                            @if ($penerimaan->status == 'Draft')
+                                                                <button type="button" class="btn btn-outline-danger"
+                                                                    data-bs-dismiss="modal">Tutup</button>
+                                                                <form action="{{ route('kades.acc.acceptance') }}"
+                                                                    method="POST">
+                                                                    @csrf
+                                                                    <input type="hidden" name="id"
+                                                                        value="{{ $penerimaan->id }}">
+                                                                    <button type="submit"
+                                                                        class="btn btn-success">Setujui</button>
+                                                                </form>
+                                                            @else
+                                                                <button type="button" class="btn btn-danger"
+                                                                    data-bs-dismiss="modal">Tutup</button>
+                                                            @endif
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-    <form action="" method="POST" id="deleteForm">
+    <form action="{{ route('admin.delete.acceptance') }}" method="POST" id="deleteForm">
         @csrf
         @method('DELETE')
         <input type="hidden" name="id" id="idDelete">
@@ -76,25 +181,44 @@
 
 @section('scripts')
     <script>
-        function hapusALL(id) {
-            Swal.fire({
-                title: "Yakin ingin menghapus data?",
-                text: "Data yang dihapus tidak dapat dikembalikan!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                cancelButtonText: "Batal",
-                confirmButtonText: "Iya, Hapus!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const Form = $('#deleteForm');
-                    const IDinput = Form.find('#idDelete');
-                    IDinput.val(id);
-                    Form.submit();
+        @if (Auth::user()->role == 'admin')
+            function hapusALL(id) {
+                Swal.fire({
+                    title: "Yakin ingin menghapus data?",
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    cancelButtonText: "Batal",
+                    confirmButtonText: "Iya, Hapus!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const Form = $('#deleteForm');
+                        const IDinput = Form.find('#idDelete');
+                        IDinput.val(id);
+                        Form.submit();
+                    }
+                });
+            }
+
+            $(document).on('click', 'button[type="submit"]', function(e) {
+                e.preventDefault();
+                $(this).prop('disabled', true);
+                $(this).html('Proses...');
+                $('.loader').removeClass('hidden');
+
+                var form = $('#uploadFileForm')[0];
+                if (form.checkValidity()) {
+                    form.submit();
+                } else {
+                    $(this).prop('disabled', false);
+                    $(this).html('Tambah');
+                    $('.loader').addClass('hidden');
+                    form.reportValidity();
                 }
             });
-        }
+        @endif
 
         $(document).ready(function() {
             $('#acceptanceTable').DataTable({
@@ -105,23 +229,6 @@
                     "searchable": false
                 }]
             });
-        });
-
-        $(document).on('click', 'button[type="submit"]', function(e) {
-            e.preventDefault();
-            $(this).prop('disabled', true);
-            $(this).html('Proses...');
-            $('.loader').removeClass('hidden');
-
-            var form = $('#uploadFileForm')[0];
-            if (form.checkValidity()) {
-                form.submit();
-            } else {
-                $(this).prop('disabled', false);
-                $(this).html('Tambah');
-                $('.loader').addClass('hidden');
-                form.reportValidity();
-            }
         });
     </script>
 @endsection

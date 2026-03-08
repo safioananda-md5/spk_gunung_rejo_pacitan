@@ -31,8 +31,10 @@ class LoginController extends Controller
 
             if (Auth::user()->role == 'admin') {
                 return redirect()->route('admin.dashboard');
-            } else {
-                return redirect()->route('user.dashboard');
+            } else if (Auth::user()->role == 'rt') {
+                return redirect()->route('rt.dashboard');
+            } else if (Auth::user()->role == 'kades') {
+                return redirect()->route('kades.dashboard');
             }
         } else {
             flash()->error('Login gagal, Kredensial akun tidak valid!');

@@ -7,6 +7,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PerhitunganController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -32,10 +34,40 @@ Route::group([
     Route::post('/delete-kriteria/{id}', [CriteriaController::class, 'delete'])->name('delete.criteria');
     // Input Data
     Route::get('/input-data', [DataController::class, 'index'])->name('input.data');
-    Route::post('/input-data', [DataController::class, 'post'])->name('post.data');
-    Route::delete('/delete-data', [DataController::class, 'delete'])->name('delete.data');
-    Route::delete('/delete-all-data', [DataController::class, 'deleteAll'])->name('delete.all.data');
     // Penerimaan
     Route::get('/penerimaan', [AcceptanceController::class, 'index'])->name('acceptance');
     Route::post('/penerimaan', [AcceptanceController::class, 'post'])->name('post.acceptance');
+    Route::delete('/hapus/penerimaan', [AcceptanceController::class, 'delete'])->name('delete.acceptance');
+    // Master User
+    Route::get('/master/user', [UserController::class, 'index'])->name('user');
+    Route::post('/master/user', [UserController::class, 'store'])->name('store.user');
+    Route::put('/master/user/edit', [UserController::class, 'edit'])->name('edit.user');
+    // Perhitungan
+    Route::get('/perhitungan/{id}', [PerhitunganController::class, 'index'])->name('perhitungan');
+});
+
+// RT Routes
+Route::group([
+    'prefix' => '/RT',
+    'as' => 'rt.',
+    'middleware' => ['auth', 'role:rt', 'decrypt:id']
+], function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/input-data', [DataController::class, 'index'])->name('input.data');
+    Route::post('/input-data', [DataController::class, 'post'])->name('post.data');
+    Route::delete('/delete-data', [DataController::class, 'delete'])->name('delete.data');
+    Route::delete('/delete-all-data', [DataController::class, 'deleteAll'])->name('delete.all.data');
+});
+
+// KADES Routes
+Route::group([
+    'prefix' => '/KADES',
+    'as' => 'kades.',
+    'middleware' => ['auth', 'role:kades', 'decrypt:id']
+], function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/penerimaan', [AcceptanceController::class, 'index'])->name('acceptance');
+    Route::post('/setujui/penerimaan', [AcceptanceController::class, 'acc'])->name('acc.acceptance');
+    // Perhitungan
+    Route::get('/perhitungan/{id}', [PerhitunganController::class, 'index'])->name('perhitungan');
 });

@@ -14,10 +14,17 @@ class Alternative extends Model
     protected $fillable = [
         'name',
         'description',
+        'rt',
+        'rw',
     ];
 
     public function criteria_alternative()
     {
         return $this->hasMany(CriteriaAlternative::class, 'alternative_id', 'id');
+    }
+
+    public function pengajuan()
+    {
+        return $this->hasMany(PenerimaanAlternative::class, 'alternative_id', 'id');
     }
 }

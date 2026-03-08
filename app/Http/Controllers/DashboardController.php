@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alternative;
+use App\Models\Criteria;
+use App\Models\PenerimaanAlternative;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -10,42 +12,42 @@ class DashboardController extends Controller
     public function index()
     {
         if (Auth::user()->role == 'admin') {
-            $labels = [];
-            $counts = [];
+            return view(Auth::user()->role . '.dashboard');
+        } elseif (Auth::user()->role == 'rt') {
+            $alternativeIds = PenerimaanAlternative::select('alternative_id')->distinct()
+                ->pluck('alternative_id')->toArray();
 
-            // Loop untuk 5 tahun terakhir (termasuk tahun ini)
-            for ($i = 4; $i >= 0; $i--) {
-                $year = now()->subYears($i)->year;
-                $labels[] = $year;
+            $alternativesAvailable = Alternative::where('rt', Auth::user()->rt)->where('rw', Auth::user()->rw)->whereNotIn('id', $alternativeIds)->count();
+            $alternativesProcess = Alternative::withTrashed()->where('rt', Auth::user()->rt)->where('rw', Auth::user()->rw)->whereIn('id', $alternativeIds)->count();
+            $alternativeIdsTrashed = PenerimaanAlternative::onlyTrashed()->select('alternative_id')->distinct()
+                ->pluck('alternative_id')->toArray();
+            $alternativesAcc = Alternative::withTrashed()
+                ->with([
+                    'pengajuan' => function ($query) {
+                        $query->withTrashed()
+                            ->whereNotNull('deleted_at')
+                            ->latest('deleted_at')
+                            ->limit(1);
+                    }
+                ])
+                ->where('rt', Auth::user()->rt)
+                ->where('rw', Auth::user()->rw)
+                ->whereIn('id', $alternativeIdsTrashed)
+                ->latest('deleted_at')
+                ->get();
+            $alternativesAcc = $alternativesAcc->unique('id');
+            return view(Auth::user()->role . '.dashboard', compact(['alternativesAvailable', 'alternativesProcess', 'alternativesAcc']));
+        } elseif (Auth::user()->role == 'kades') {
+            $criterias = Criteria::with(['sub_criteria'])->get();
+            $CountPenerima = PenerimaanAlternative::onlyTrashed()
+                ->distinct('alternative_id')
+                ->count('alternative_id');
+            $ArrPenerima = PenerimaanAlternative::onlyTrashed()
+                ->distinct('alternative_id')
+                ->pluck('alternative_id')->toArray();
 
-                // Hitung jumlah data yang soft delete pada tahun tersebut
-                $count = Alternative::onlyTrashed()
-                    ->whereYear('deleted_at', $year)
-                    ->count();
-
-                $counts[] = $count;
-            }
-
-            $data1 = Alternative::onlyTrashed()->where('value', '>', 3)->count();
-
-            // Data 2: Value antara 2 sampai 3 (termasuk 2 dan 3)
-            $data2 = Alternative::onlyTrashed()->whereBetween('value', [2, 3])->count();
-
-            // Data 3: Value < 2
-            $data3 = Alternative::onlyTrashed()->where('value', '<', 2)->count();
-
-            // Satukan ke dalam satu array
-            $valueDistribution = [$data1, $data2, $data3];
-
-            return view('admin.dashboard', compact('labels', 'counts', 'valueDistribution'));
-        } else {
-            $uniqueDates = Alternative::onlyTrashed()
-                ->get()
-                ->groupBy(function ($item) {
-                    return $item->deleted_at->translatedFormat('d F Y,H:i:s') . '|' . $item->description;
-                });
-
-            return view('user.dashboard', compact(['uniqueDates']));
+            $CountCalon = Alternative::withTrashed()->whereNotIn('id', $ArrPenerima)->count();
+            return view(Auth::user()->role . '.dashboard', compact(['CountPenerima', 'CountCalon', 'criterias']));
         }
     }
 }

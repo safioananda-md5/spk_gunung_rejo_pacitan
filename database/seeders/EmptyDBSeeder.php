@@ -14,12 +14,10 @@ class EmptyDBSeeder extends Seeder
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('alternatives')->truncate();
+        DB::table('alternatives')->update(['deleted_at' => null]);
+        DB::table('alternative_penerimaans')->truncate();
         DB::table('criteria_alternative')->truncate();
-        DB::table('criterias')->truncate();
-        DB::table('sub_criteria')->truncate();
-        DB::table('users')->truncate();
-        DB::table('weight_value')->truncate();
+        DB::table('penerimaans')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }

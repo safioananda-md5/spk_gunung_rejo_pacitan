@@ -102,49 +102,50 @@
             <nav class="sidebar sidebar-offcanvas" id="sidebar">
                 <ul class="nav">
                     <li class="nav-item">
-                        @if (Auth::user()->role == 'user')
-                            <a class="nav-link" href="{{ route(Auth::user()->role . '.penerimaan') }}">
+                        <a class="nav-link" href="{{ route(Auth::user()->role . '.dashboard') }}">
+                            <i class="typcn typcn-device-desktop menu-icon"></i>
+                            <span class="menu-title">Dashboard</span>
+                        </a>
+                    </li>
+                    @if (Auth::user()->role == 'rt')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route(Auth::user()->role . '.input.data') }}">
+                                <i class="typcn typcn-document-add menu-icon"></i>
+                                <span class="menu-title">Data Calon Penerima</span>
+                            </a>
+                        </li>
+                    @endif
+                    @if (Auth::user()->role == 'kades')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route(Auth::user()->role . '.acceptance') }}">
                                 <i class="typcn typcn-group menu-icon"></i>
                                 <span class="menu-title">Penerimaan</span>
                             </a>
-                        @else
-                            <a class="nav-link" href="{{ route(Auth::user()->role . '.dashboard') }}">
-                                <i class="typcn typcn-device-desktop menu-icon"></i>
-                                <span class="menu-title">Dashboard</span>
-                            </a>
-                        @endif
-                    </li>
+                        </li>
+                    @endif
                     @if (Auth::user()->role == 'admin')
-                        <li class="nav-item no-active">
-                            <a class="nav-link" data-toggle="collapse" href="#ui-criteria" aria-expanded="false"
-                                aria-controls="ui-criteria">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route(Auth::user()->role . '.criteria') }}">
                                 <i class="typcn typcn-document-text menu-icon"></i>
-                                <span class="menu-title">Kriteria Pengujian</span>
-                                <i class="menu-arrow"></i>
+                                <span class="menu-title">Master Kriteria</span>
                             </a>
-                            <div class="collapse" id="ui-criteria">
-                                <ul class="nav flex-column sub-menu">
-                                    <li class="nav-item">
-                                        <a class="nav-link sub-hover {{ Route::is(Auth::user()->role . '.criteria') ? 'bg-green text-light' : '' }}"
-                                            href="{{ route(Auth::user()->role . '.criteria') }}">
-                                            <i
-                                                class="typcn typcn-clipboard menu-icon {{ Route::is(Auth::user()->role . '.criteria') ? 'text-light' : '' }}"></i>
-                                            <span class="menu-title">Kriteria</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route(Auth::user()->role . '.input.data') }}">
                                 <i class="typcn typcn-document-add menu-icon"></i>
-                                <span class="menu-title">Input Data</span>
+                                <span class="menu-title">Data Calon Penerima</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route(Auth::user()->role . '.acceptance') }}">
                                 <i class="typcn typcn-group menu-icon"></i>
                                 <span class="menu-title">Penerimaan</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route(Auth::user()->role . '.user') }}">
+                                <i class="typcn typcn-user menu-icon"></i>
+                                <span class="menu-title">Master User</span>
                             </a>
                         </li>
                     @endif

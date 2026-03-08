@@ -10,19 +10,25 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\CriteriaAlternative;
+use App\Models\Penerimaan;
+use App\Models\PenerimaanAlternative;
+use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class AcceptanceController extends Controller
 {
     public function index()
     {
-        $uniqueDates = Alternative::onlyTrashed()
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->deleted_at->translatedFormat('d F Y,H:i:s') . '|' . $item->description;
-            });
+        $penerimaans = Penerimaan::with([
+            'rank' => function ($query) {
+                $query->withTrashed()->with(['alternative' => function ($qAlt) {
+                    $qAlt->withTrashed();
+                }]);
+            }
+        ])->get();
 
-        return view('admin.penerimaan', compact(['uniqueDates']));
+        return view('admin.penerimaan', compact(['penerimaans']));
     }
 
     public function post(Request $request)
@@ -40,6 +46,11 @@ class AcceptanceController extends Controller
             // Matriks Keputusan
             $alternatives = Alternative::all();
             $criterias = Criteria::all();
+
+            $alternativemath = [];
+            foreach ($alternatives as $alternative) {
+                $alternativemath[] = $alternative->id;
+            }
 
             $matriks_x = [];
             foreach ($alternatives as $alternative) {
@@ -99,10 +110,114 @@ class AcceptanceController extends Controller
             foreach ($alternatives as $alternative) {
                 $nilai_yi[$alternative->id] = bcsub($nilai_y_max[$alternative->id], $nilai_y_min[$alternative->id], 6);
             }
-            // DB::beginTransaction();
 
-            // DB::commit();
+            arsort($nilai_yi);
+            $DataRank = [];
+            $Rank = 1;
+            foreach ($nilai_yi as $indexYi => $nilai_yii) {
+                $DataRank[$indexYi] = [
+                    'rank' => $Rank,
+                    'value' => $nilai_yii
+                ];
+                $Rank++;
+            }
+
+            if ($request->count > count($alternatives)) {
+                throw new Exception('Jumlah penerimaan tidak boleh lebih besar dari jumlah data tersedia');
+            }
+
+            $tops = array_slice($DataRank, 0, $request->count, true);
+
+            Carbon::setLocale('id');
+            $tanggal = Carbon::now()->translatedFormat('d F Y, H:i:s');
+
+            DB::beginTransaction();
+            $penerimaan = Penerimaan::create([
+                'tanggal' => $tanggal,
+                'status' => 'Draft',
+                'alternativemath' => json_encode($alternativemath),
+            ]);
+
+            foreach ($tops as $indextop => $top) {
+                PenerimaanAlternative::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'alternative_id' => $indextop,
+                    'rank' => $top['rank'],
+                    'value' => $top['value'],
+                ]);
+                Alternative::where('id', $indextop)->delete();
+            }
+            DB::commit();
             flash()->success('Data penerimaan berhasil dibuat.');
+            return redirect()->back();
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+            $allErrors = collect($errors)->flatten()->implode('<br> • ');
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> • ' . $allErrors);
+            return redirect()->back();
+        } catch (Throwable $e) {
+            DB::rollback();
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $request->validate(
+                [
+                    'id' => 'required',
+                ],
+                [
+                    'id.required' => 'Data Penerimaan tidak ditemukan!',
+                ]
+            );
+
+            DB::beginTransaction();
+            $penerimaan = Penerimaan::with(['rank'])->where('id', $request->id)->firstOrFail();
+
+            foreach ($penerimaan->rank as $rank) {
+                Alternative::withTrashed()->find($rank->alternative_id)->restore();
+            }
+
+            PenerimaanAlternative::where('penerimaan_id', $penerimaan->id)->delete();
+            $penerimaan->delete();
+            DB::commit();
+            flash()->success('Data penerimaan berhasil dihapus.');
+            return redirect()->back();
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+            $allErrors = collect($errors)->flatten()->implode('<br> • ');
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> • ' . $allErrors);
+            return redirect()->back();
+        } catch (Throwable $e) {
+            DB::rollback();
+            flash()->error('Inputan Gagal! Periksa kembali isian Anda. <br> ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function acc(Request $request)
+    {
+        try {
+            $request->validate(
+                [
+                    'id' => 'required',
+                ],
+                [
+                    'id.required' => 'Data Penerimaan tidak ditemukan!',
+                ]
+            );
+
+            DB::beginTransaction();
+            $penerimaan = Penerimaan::with(['rank'])->where('id', $request->id)->firstOrFail();
+            $penerimaan->rank()->delete();
+            $penerimaan->update([
+                'status' => 'Setuju'
+            ]);
+            DB::commit();
+            flash()->success('Data penerimaan berhasil disetujui.');
             return redirect()->back();
         } catch (ValidationException $e) {
             $errors = $e->errors();

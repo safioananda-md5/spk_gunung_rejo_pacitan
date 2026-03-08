@@ -17,8 +17,6 @@ class DefaultSeeder extends Seeder
         $this->call([
             EmptyDBSeeder::class,
             UserSeeder::class,
-            CriteriaSeeder::class,
-            WeightValueSeeder::class,
         ]);
     }
 }

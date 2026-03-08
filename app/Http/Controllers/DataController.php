@@ -11,6 +11,7 @@ use App\Imports\CacheImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\CriteriaAlternative;
+use App\Models\PenerimaanAlternative;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Crypt;
@@ -27,8 +28,34 @@ class DataController extends Controller
             return redirect(route(Auth::user()->role . '.dashboard'));
         }
 
-        $alternatives = Alternative::withCount('criteria_alternative')->with('criteria_alternative.criteria')->orderBy('id', 'asc')->get();
-        return view('admin.data_input', compact(['alternatives', 'criterias']));
+        if (Auth::user()->role == 'rt') {
+            $alternatives = Alternative::withTrashed()->withCount('criteria_alternative')->with('criteria_alternative.criteria')->orderBy('id', 'asc')->where('rt', Auth::user()->rt)->where('rw', Auth::user()->rw)->get();
+            $alternativeIdsTrashed = PenerimaanAlternative::onlyTrashed()->select('alternative_id')->distinct()
+                ->pluck('alternative_id')->toArray();
+            $alternativesAcc = Alternative::withTrashed()
+                ->with([
+                    'pengajuan' => function ($query) {
+                        $query->withTrashed()
+                            ->whereNotNull('deleted_at')
+                            ->latest('deleted_at')
+                            ->limit(1);
+                    }
+                ])
+                ->where('rt', Auth::user()->rt)
+                ->where('rw', Auth::user()->rw)
+                ->whereIn('id', $alternativeIdsTrashed)
+                ->latest('deleted_at')
+                ->get();
+            $alternativesAcc = $alternativesAcc->unique('id')->pluck('id')->toArray();
+            $alternativeIds = PenerimaanAlternative::withTrashed()->select('alternative_id')->distinct()
+                ->pluck('alternative_id')->toArray();
+            return view('admin.data_input', compact(['alternatives', 'criterias', 'alternativeIds', 'alternativesAcc']));
+        } else {
+            $alternatives = Alternative::withCount('criteria_alternative')->with('criteria_alternative.criteria')->orderBy('id', 'asc')->get();
+            $alternativeIds = PenerimaanAlternative::select('alternative_id')->distinct()
+                ->pluck('alternative_id')->toArray();
+            return view('admin.data_input', compact(['alternatives', 'criterias', 'alternativeIds']));
+        }
     }
 
     public function post(Request $request)
@@ -47,6 +74,8 @@ class DataController extends Controller
             DB::beginTransaction();
             $alternative = Alternative::create([
                 'name' => $request->name,
+                'rt' => Auth::user()->rt,
+                'rw' => Auth::user()->rw,
             ]);
 
             foreach ($request->criteria as $criteria => $subCriteria) {
