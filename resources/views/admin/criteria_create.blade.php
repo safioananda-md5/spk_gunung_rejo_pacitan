@@ -94,20 +94,20 @@
                                                     style="color: red">*</span></label>
                                             <select class="form-control typeSub" id="typeSub{{ $sub->scale }}">
                                                 <option value="">-- Pilih Jenis --</option>
-                                                <option value="upper" @if ($sub->upper_value) selected @endif>
+                                                <option value="upper" @if (isset($sub->upper_value)) selected @endif>
                                                     Diatas
                                                 </option>
-                                                <option value="under" @if ($sub->under_value) selected @endif>
+                                                <option value="under" @if (isset($sub->under_value)) selected @endif>
                                                     Dibawah</option>
-                                                <option value="range" @if ($sub->initial_value && $sub->final_value) selected @endif>
+                                                <option value="range" @if (isset($sub->initial_value) && isset($sub->final_value)) selected @endif>
                                                     Range</option>
-                                                <option value="sameas" @if ($sub->sameas_value) selected @endif>
+                                                <option value="sameas" @if (isset($sub->sameas_value)) selected @endif>
                                                     Sama Dengan</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-6" id="datasub{{ $sub->scale }}">
-                                        @if ($sub->upper_value)
+                                        @if (isset($sub->upper_value))
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="form-group">
@@ -121,7 +121,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        @elseif ($sub->under_value)
+                                        @elseif (isset($sub->under_value))
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="form-group">
@@ -135,7 +135,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        @elseif ($sub->initial_value && $sub->final_value)
+                                        @elseif (isset($sub->initial_value) && isset($sub->final_value))
                                             <div class="row">
                                                 <div class="col-lg-6">
                                                     <div class="form-group">

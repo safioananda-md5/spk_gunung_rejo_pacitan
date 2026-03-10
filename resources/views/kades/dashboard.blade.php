@@ -62,7 +62,7 @@
                                                     <tr class="py-0">
                                                         <td class="p-1">
                                                             > {{ $sub_criteria->initial_value }} & &le;
-                                                            {{ $sub_criteria->initial_value }}</td>
+                                                            {{ $sub_criteria->final_value }}</td>
                                                     </tr>
                                                 @elseif(isset($sub_criteria->sameas_value))
                                                     <tr class="py-0">
